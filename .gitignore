@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+.frontend-api-token
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Local data & uploads
+.tmp/
+.strapi/
+backend/public/uploads/
+
+# Logs & OS files
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

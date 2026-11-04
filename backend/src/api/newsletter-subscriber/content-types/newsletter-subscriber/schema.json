@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "newsletter_subscribers",
+  "info": {
+    "singularName": "newsletter-subscriber",
+    "pluralName": "newsletter-subscribers",
+    "displayName": "Newsletter Subscriber",
+    "description": "Email newsletter subscribers"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "email": {
+      "type": "email",
+      "required": true,
+      "unique": true
+    },
+    "subscribedAt": {
+      "type": "datetime"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["active", "unsubscribed"],
+      "default": "active",
+      "required": true
+    }
+  }
+}

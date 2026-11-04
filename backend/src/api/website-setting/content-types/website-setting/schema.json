@@ -1,0 +1,57 @@
+{
+  "kind": "singleType",
+  "collectionName": "website_settings",
+  "info": {
+    "singularName": "website-setting",
+    "pluralName": "website-settings",
+    "displayName": "Website Settings",
+    "description": "Global site configuration managed from the CMS"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "siteName": {
+      "type": "string",
+      "required": true
+    },
+    "logo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "favicon": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images", "files"]
+    },
+    "siteDescription": {
+      "type": "text"
+    },
+    "socialLinks": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.social-links"
+    },
+    "contactEmail": {
+      "type": "email"
+    },
+    "footerContent": {
+      "type": "text"
+    },
+    "defaultSeoTitle": {
+      "type": "string",
+      "maxLength": 70
+    },
+    "defaultSeoDescription": {
+      "type": "text",
+      "maxLength": 160
+    },
+    "defaultOgImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    }
+  }
+}
