@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Mail, MapPin, MessageSquare } from 'lucide-react';
 import { getSettings } from '@/services/api';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
+import { ContactForm } from '@/components/ui/ContactForm';
 import { buildMetadata } from '@/lib/seo';
 
 export const revalidate = 3600;
@@ -49,6 +50,18 @@ export default async function ContactPage() {
           <p className="mt-1 text-sm text-muted">
             Fully remote — our contributors write from four continents and counting.
           </p>
+        </div>
+      </div>
+
+      <div className="mt-12 rounded-2xl border border-border bg-surface p-6 sm:p-8">
+        <h2 className="font-serif text-2xl font-semibold tracking-tight">
+          Send us a message
+        </h2>
+        <p className="mt-2 text-sm text-muted">
+          Submissions land directly in our CMS — a real editor reads every one.
+        </p>
+        <div className="mt-6">
+          <ContactForm />
         </div>
       </div>
     </div>

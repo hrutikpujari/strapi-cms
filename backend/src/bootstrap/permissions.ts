@@ -19,6 +19,7 @@ export const PUBLIC_ACTIONS = [
   'api::tag.tag.findOne',
   'api::website-setting.website-setting.find',
   'api::newsletter-subscriber.newsletter-subscriber.subscribe',
+  'api::contact-message.contact-message.submit',
 ];
 
 /**
