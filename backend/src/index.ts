@@ -1,6 +1,7 @@
 import type { Core } from '@strapi/strapi';
 import { configurePublicPermissions } from './bootstrap/permissions';
 import { ensureFrontendToken } from './bootstrap/api-token';
+import { ensureAdminUser } from './bootstrap/admin-user';
 import { seedDemoData } from './bootstrap/seed';
 
 export default {
@@ -25,6 +26,7 @@ export default {
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     await configurePublicPermissions(strapi);
     await ensureFrontendToken(strapi);
+    await ensureAdminUser(strapi);
     await seedDemoData(strapi);
   },
 };
