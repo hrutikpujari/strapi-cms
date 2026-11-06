@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Strapi Plans &amp; API Usage — Complete Reference</title>
+<style>
+  :root { --ink:#1c1917; --muted:#78716c; --accent:#4945ff; --line:#e7e5e4; --bg:#fafaf9; }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink); background: #fff; padding: 48px 56px; font-size: 13.5px; line-height: 1.55; }
+  h1 { font-size: 28px; letter-spacing: -0.5px; margin-bottom: 6px; }
+  h2 { font-size: 17px; margin: 34px 0 12px; padding-bottom: 6px; border-bottom: 2px solid var(--accent); }
+  h3 { font-size: 14px; margin: 18px 0 8px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+  .badge { display:inline-block; background:var(--accent); color:#fff; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight:600; vertical-align: middle; margin-left:6px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 6px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); background: var(--bg); }
+  td:first-child { font-weight: 600; }
+  .price { font-weight: 700; white-space: nowrap; }
+  ul { margin: 6px 0 6px 18px; }
+  li { margin: 3px 0; }
+  .callout { background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 10px; padding: 12px 16px; margin: 14px 0; }
+  .warn { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 12px 16px; margin: 14px 0; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 12px 0; }
+  .card { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .card h4 { font-size: 14px; margin-bottom: 2px; }
+  .card .p { font-size: 20px; font-weight: 700; margin: 4px 0 8px; }
+  .card ul { margin-left: 16px; font-size: 12.5px; }
+  code { background: var(--bg); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+  .foot { margin-top: 36px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+  .pb { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<h1>Strapi Plans &amp; API Usage Reference</h1>
+<p class="sub">Complete breakdown of CMS license plans, Strapi Cloud hosting tiers, API request counting, and overages — as of November 2026. For the Meridian project context: <strong>your Strapi is self-hosted Community Edition on Render — unlimited API calls, no meter</strong>.</p>
+
+<h2>1. Two separate things get priced</h2>
+<p>Strapi pricing has <strong>two independent axes</strong>. Mixing them up is the most common confusion:</p>
+<div class="callout">
+<strong>CMS License</strong> = the software features you unlock (free Community, paid Growth / Enterprise). Applies the same whether you self-host or use Strapi Cloud.<br><br>
+<strong>Strapi Cloud</strong> = managed hosting — servers, DB, CDN, backups. Optional; you can self-host for free (what this project does on Render).
+</div>
+
+<h2>2. CMS License Plans</h2>
+<div class="grid">
+  <div class="card">
+    <h4>Community</h4>
+    <div class="p">Free forever</div>
+    <ul>
+      <li>MIT open-source license</li>
+      <li><b>Unlimited</b> content entries</li>
+      <li><b>Unlimited</b> API calls</li>
+      <li><b>Unlimited</b> locales, roles, components</li>
+      <li>REST + GraphQL APIs, API tokens</li>
+      <li>RBAC, Draft &amp; Publish, Media Library</li>
+      <li>Webhooks, CRON, Custom Fields, Blocks editor</li>
+      <li>Static Preview, MCP server, i18n</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>Growth</h4>
+    <div class="p">$45 / mo</div>
+    <ul>
+      <li>Everything in Community</li>
+      <li>3 users included (+$15/mo per extra)</li>
+      <li>Live Preview</li>
+      <li>Releases</li>
+      <li>Content History (14 days)</li>
+      <li>Strapi AI Growth — 1,000 credits/mo<br>(extra $1.50 per 100)</li>
+      <li>Basic Support (license/billing only)</li>
+      <li>SSO add-on: $150/mo + $50/user</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>Enterprise</h4>
+    <div class="p">Custom</div>
+    <ul>
+      <li>Everything in Growth</li>
+      <li>SSO included (SAML/OAuth2)</li>
+      <li>Review Workflows</li>
+      <li>Audit Logs</li>
+      <li>Extended Content History</li>
+      <li>SOC 2 report</li>
+      <li>Standard Support + Premium options</li>
+      <li>Strapi AI Enterprise add-on (bring your own model)</li>
+      <li>Offline license option</li>
+    </ul>
+  </div>
+</div>
+<p><strong>Growth trial:</strong> self-hosted projects can try Growth features free for 30 days, no card required.</p>
+
+<h2>3. Strapi Cloud Hosting Plans</h2>
+<div class="warn"><strong>Note:</strong> The Cloud Free plan and free trial were <b>discontinued in August 2026</b>. The cheapest entry is now Starter at $35/mo. (This is exactly why your Render deployment was the right call.)</div>
+<div class="grid">
+  <div class="card">
+    <h4>Starter</h4>
+    <div class="p">$35 / mo</div>
+    <ul>
+      <li><b>100k</b> API requests / mo</li>
+      <li>50 GB asset storage</li>
+      <li>50 GB asset bandwidth / mo</li>
+      <li>Unlimited DB entries*</li>
+      <li>1 environment</li>
+      <li>Built-in email, global CDN, custom domain</li>
+      <li><b>Sleeps when idle</b></li>
+      <li>Observability 7d, logs 7d</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>Pro <span class="badge">best value</span></h4>
+    <div class="p">$90 / mo</div>
+    <ul>
+      <li><b>1M</b> API requests / mo</li>
+      <li>250 GB asset storage</li>
+      <li>500 GB asset bandwidth / mo</li>
+      <li>Multi-environment</li>
+      <li>Weekly + manual backups (1 mo)</li>
+      <li>CRON jobs</li>
+      <li><b>Always on</b></li>
+      <li>Observability 30d, logs 14d</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>Business</h4>
+    <div class="p">$450 / mo</div>
+    <ul>
+      <li><b>10M</b> API requests / mo</li>
+      <li>1,000 GB asset storage</li>
+      <li>1,000 GB asset bandwidth / mo</li>
+      <li>2 environments included</li>
+      <li>Daily backups (1 mo)</li>
+      <li>99.9% uptime SLA</li>
+      <li>DDoS protection</li>
+      <li>Observability 60d, logs 30d</li>
+    </ul>
+  </div>
+</div>
+<ul>
+  <li><strong>API request overage:</strong> +$1.50 per additional 25,000 requests (billed monthly).</li>
+  <li><strong>Extra environments:</strong> Pro +$60/mo (or $600/yr); Business +$300/mo (or $3,000/yr).</li>
+  <li><strong>Yearly billing:</strong> 20% discount on all paid plans; usage quotas still reset monthly.</li>
+  <li><strong>CMS plan not included:</strong> Cloud hosting covers infrastructure only — Growth/Enterprise features still require a separate CMS license key.</li>
+</ul>
+
+<h2 class="pb">4. What counts as an "API request"</h2>
+<p>On Strapi Cloud, metering works like this:</p>
+<table>
+  <tr><th>Counted as API requests</th><th>NOT counted as API requests</th></tr>
+  <tr>
+    <td>
+      <ul>
+        <li>Every request to the <b>REST API</b> (<code>/api/*</code>) — GET, POST, PUT, DELETE</li>
+        <li>Every request to the <b>GraphQL API</b></li>
+        <li><b>All response types count</b> — 200s, errors, empty results</li>
+      </ul>
+    </td>
+    <td>
+      <ul>
+        <li>File &amp; media asset requests (<code>/uploads/*</code>) — those count toward <b>asset bandwidth/storage</b> instead</li>
+        <li>Admin panel traffic (<code>/admin</code>, <code>/content-manager</code>)</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+<p>Quota resets monthly (even on annual plans). Hitting limits on paid plans triggers overage billing; projects are only suspended for unpaid invoices or plan violations.</p>
+
+<h2>5. What this means for the Meridian project</h2>
+<table>
+  <tr><th>Event on your site</th><th>Strapi API requests</th></tr>
+  <tr><td>Reader opens a cached article page</td><td><b>0</b> — served from Vercel's ISR edge cache</td></tr>
+  <tr><td>Cache miss / page rebuild</td><td>~4–5 (article, related, settings, nav)</td></tr>
+  <tr><td>View counter on article view</td><td>1 (always a live POST)</td></tr>
+  <tr><td>Newsletter / contact submission</td><td>1</td></tr>
+  <tr><td>Sitemap / RSS regeneration</td><td>~3</td></tr>
+  <tr><td>Admin panel usage</td><td>Admin API — uncounted even on Cloud</td></tr>
+  <tr><td>Images loading</td><td>0 — served by Cloudinary</td></tr>
+</table>
+<div class="callout">
+<strong>Your actual exposure:</strong> self-hosted Community Edition on Render = <b>no cap at all</b>. But even if you moved to Cloud Starter's 100k/mo plan, the ISR architecture means typical usage would be a few hundred requests/day — mostly view-counter POSTs, not page views.
+</div>
+
+<h2>6. Decision guide</h2>
+<table>
+  <tr><th>Situation</th><th>Recommended</th></tr>
+  <tr><td>Demo / portfolio / personal blog</td><td><b>Community + self-host</b> (Render/Neon/Cloudinary free tiers — your current setup, $0/mo)</td></tr>
+  <tr><td>Want managed hosting, low traffic</td><td>Community + <b>Cloud Starter</b> $35/mo</td></tr>
+  <tr><td>Real production traffic, backups, no sleep</td><td>Community + <b>Cloud Pro</b> $90/mo, or self-host on a paid VPS</td></tr>
+  <tr><td>Editorial team needs Live Preview, Releases, Content History</td><td>Add <b>Growth</b> license $45/mo on top of either hosting choice</td></tr>
+  <tr><td>Compliance needs: SSO, audit logs, SLA</td><td><b>Enterprise</b> + Cloud Business — talk to sales</td></tr>
+</table>
+
+<div class="foot">
+  Sources: strapi.io/pricing-cms, strapi.io/pricing-cloud, docs.strapi.io/cloud/getting-started/usage-billing (accessed Nov 2026). Prices exclude local taxes. * "Unlimited" entries subject to fair-use/storage plan limits.
+</div>
+
+</body>
+</html>

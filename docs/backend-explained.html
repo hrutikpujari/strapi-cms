@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Meridian Backend — Complete Code Walkthrough</title>
+<style>
+  :root { --ink:#1c1917; --muted:#78716c; --accent:#4945ff; --line:#e7e5e4; --bg:#fafaf9; }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink); background: #fff; padding: 44px 54px; font-size: 13px; line-height: 1.55; }
+  h1 { font-size: 27px; letter-spacing: -0.5px; margin-bottom: 6px; }
+  h2 { font-size: 16.5px; margin: 30px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--accent); }
+  h3 { font-size: 13.5px; margin: 16px 0 6px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 6px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); background: var(--bg); }
+  td:first-child { font-weight: 600; }
+  ul { margin: 6px 0 6px 18px; } li { margin: 3px 0; }
+  code { background: var(--bg); padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; font-size: 11.5px; }
+  pre { background: #f5f5f4; border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; font-family: Consolas, monospace; font-size: 11px; line-height: 1.5; overflow: hidden; margin: 8px 0; }
+  .callout { background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 10px; padding: 11px 15px; margin: 12px 0; }
+  .path { font-family: Consolas, monospace; font-size: 11.5px; color: var(--accent); font-weight: 600; }
+  .pb { page-break-before: always; }
+  .foot { margin-top: 32px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+</style>
+</head>
+<body>
+
+<h1>Meridian Backend — Complete Code Walkthrough</h1>
+<p class="sub"><span class="path">backend/</span> — Strapi 5.60 on Node.js 24 (TypeScript). One process serving the REST API, admin panel, auth, media pipeline, and all custom business logic.</p>
+
+<h2>1. What this "backend" actually is</h2>
+<p>Strapi is a Node.js application built on <b>Koa</b> (HTTP layer) and <b>Knex</b> (SQL query builder). There is no separate server framework — every file in <code>backend/src/</code> either declares content (schemas), extends Strapi's generated machinery (controllers/routes/services), or runs custom logic (bootstrap, lifecycles, middleware). At boot, Strapi scans <code>src/api/*</code> and auto-registers REST endpoints for each content type; our custom files hook into that same pipeline.</p>
+<div class="callout"><strong>Request lifecycle:</strong> HTTP → Koa middlewares (CORS, rate-limit, auth) → router → controller → document service → Knex → database → JSON response.</div>
+
+<h2>2. Folder map</h2>
+<pre>backend/
+├── config/                  — environment-driven app configuration
+├── src/
+│   ├── index.ts             — bootstrap entry: runs setup on every start
+│   ├── api/                 — one folder per content type (6 total)
+│   │   └── &lt;type&gt;/
+│   │       ├── content-types/&lt;type&gt;/schema.json   ← fields &amp; relations
+│   │       ├── controllers/&lt;type&gt;.ts              ← request handlers
+│   │       ├── routes/&lt;type&gt;.ts                   ← auto CRUD router
+│   │       ├── routes/custom-*.ts                   ← custom endpoints
+│   │       └── services/&lt;type&gt;.ts                 ← DB query layer
+│   ├── bootstrap/           — boot-time setup (perms, tokens, admin, seed)
+│   ├── middlewares/         — api-rate-limit.ts
+│   ├── components/          — shared.social-links (reusable field group)
+│   └── admin/               — admin-panel customizations (unused examples)
+└── public/uploads/          — local media storage (dev; Cloudinary in prod)</pre>
+
+<h2>3. config/ — app configuration</h2>
+<table>
+  <tr><th>File</th><th>Purpose</th></tr>
+  <tr><td><span class="path">database.ts</span></td><td>Env-driven DB: <code>DATABASE_CLIENT=sqlite|postgres</code>. Supports <code>DATABASE_URL</code> connectionString + SSL flag. SQLite → <code>.tmp/data.db</code>; prod → Neon Postgres. No code change needed between environments.</td></tr>
+  <tr><td><span class="path">middlewares.ts</span></td><td>Koa middleware stack: CORS locked to <code>CORS_ORIGIN</code>, security headers, body parsing, and registers our <code>api-rate-limit</code> middleware.</td></tr>
+  <tr><td><span class="path">plugins.ts</span></td><td>Plugin config: users-permissions (JWT/refresh, httpOnly sessions) + upload provider — <b>switches to Cloudinary when <code>CLOUDINARY_NAME</code> is set</b>, else local disk. Also the upload MIME allow/deny lists (blocks SVG, executables, scripts).</td></tr>
+  <tr><td><span class="path">server.ts</span></td><td>Host/port, <code>APP_KEYS</code> (session signing).</td></tr>
+  <tr><td><span class="path">admin.ts</span></td><td>Admin panel auth secrets (<code>ADMIN_JWT_SECRET</code>).</td></tr>
+  <tr><td><span class="path">api.ts</span></td><td>REST API defaults (pagination limits).</td></tr>
+</table>
+
+<h2>4. Content types — <code>src/api/*/schema.json</code></h2>
+<p>Each schema declares fields; Strapi generates the REST API, DB table, admin forms, and validation from it.</p>
+<table>
+  <tr><th>Type</th><th>Key fields</th><th>Notes</th></tr>
+  <tr><td><b>article</b></td><td>title, slug (uid), excerpt, content (Blocks rich text), featuredImage, thumbnailImage, ogImage, seoTitle/Description, canonicalUrl, featured, publishedDate, readingTime, viewCount</td><td>Core entity. draftAndPublish on → public API only exposes published entries. Relations: → category, → author, ↔ tags.</td></tr>
+  <tr><td><b>category</b></td><td>name, slug, description, image, seoTitle, seoDescription</td><td>Taxonomy + SEO on landing pages.</td></tr>
+  <tr><td><b>author</b></td><td>name, slug, avatar, biography, designation, socialLinks (component)</td><td>Profile data for author pages.</td></tr>
+  <tr><td><b>tag</b></td><td>name, slug</td><td>Many-to-many with articles.</td></tr>
+  <tr><td><b>newsletter-subscriber</b></td><td>email (unique), subscribedAt, status enum (active/unsubscribed)</td><td>draftAndPublish off — created via custom endpoint only.</td></tr>
+  <tr><td><b>contact-message</b></td><td>name, email, subject, message, submittedAt, status enum (new/read/archived)</td><td>Admin-inbox model; public can only submit.</td></tr>
+  <tr><td><b>website-setting</b> (single type)</td><td>siteName, siteDescription, logo, favicon, socialLinks, contactEmail, footerContent, defaultSeoTitle/Description, defaultOgImage</td><td>One global document — navbar/footer/SEO defaults.</td></tr>
+</table>
+<p><b>Component:</b> <span class="path">src/components/shared/social-links.json</span> — reusable twitter/linkedin/github/instagram group embedded in author + settings schemas.</p>
+
+<h2 class="pb">5. How the REST API gets generated</h2>
+<p>For each content type, three factory calls produce the standard surface:</p>
+<pre>// routes/article.ts        →  GET/POST/PUT/DELETE /api/articles[/:id]
+export default factories.createCoreRouter('api::article.article');
+
+// controllers/article.ts   →  find / findOne / create / update / delete
+export default factories.createCoreController('api::article.article', ({strapi}) =&gt; ({ /* overrides */ }));
+
+// services/article.ts      →  query layer used by controllers
+export default factories.createCoreService('api::article.article');</pre>
+<p>Public access is then gated by the Public role's permissions (see §7), so e.g. articles are publicly <code>find</code>-able but contact-messages are not listable at all.</p>
+
+<h2>6. Custom endpoints (the business logic)</h2>
+
+<h3>6.1 View counter — <span class="path">routes/custom-article.ts</span></h3>
+<pre>POST /api/articles/:documentId/view   (auth: false)</pre>
+<p>Controller <code>incrementView</code>: fetches the published document, updates <code>viewCount + 1</code> via the document service, returns the new count. Not-found → 404. Fires <code>afterUpdate</code> → revalidates the frontend.</p>
+
+<h3>6.2 Newsletter — <span class="path">routes/custom-newsletter-subscriber.ts</span></h3>
+<pre>POST /api/newsletter-subscribers/subscribe   (auth: false)</pre>
+<p>Controller <code>subscribe</code>: validates email regex + ≤254 chars → 400 on bad input; looks up existing by email → re-activates if <code>unsubscribed</code>, no-op if active (<b>idempotent</b>); else creates with <code>subscribedAt: now</code>.</p>
+
+<h3>6.3 Contact form — <span class="path">routes/custom-contact-message.ts</span></h3>
+<pre>POST /api/contact-messages/submit   (auth: false)</pre>
+<p>Controller <code>submit</code>: validates name ≤120, email regex, message ≤5000 → creates entry with <code>status: 'new'</code>, returns only a documentId (no echo of submitted PII).</p>
+
+<h3>6.4 Standard admin CRUD</h3>
+<p>Core routers also expose full CRUD on every type — but the Public role only gets <code>find</code>/<code>findOne</code> on content types and the three custom mutations. Write access requires the admin panel session or a scoped API token.</p>
+
+<h2>7. src/bootstrap/ — runs on every boot (src/index.ts)</h2>
+<pre>async bootstrap({ strapi }) {
+  await configurePublicPermissions(strapi);
+  await ensureFrontendToken(strapi);
+  await ensureAdminUser(strapi);
+  await seedDemoData(strapi);
+}</pre>
+<table>
+  <tr><th>Module</th><th>What it does</th></tr>
+  <tr><td><span class="path">permissions.ts</span></td><td>Idempotently grants 12 actions to the Public role: <code>find/findOne</code> on article/category/author/tag/website-setting + <code>incrementView</code> + <code>subscribe</code> + <code>submit</code>. Everything else is admin/token only.</td></tr>
+  <tr><td><span class="path">api-token.ts</span></td><td>Ensures a custom-scoped Content API token (<code>frontend-content-api</code>) exists with exactly the frontend's needed permissions; writes the plaintext key to <code>.frontend-api-token</code> (gitignored) once — Strapi only reveals it at creation.</td></tr>
+  <tr><td><span class="path">admin-user.ts</span></td><td>If <code>ADMIN_EMAIL</code>+<code>ADMIN_PASSWORD</code> envs are set: creates a super-admin when none exists for that email, or resets its password — admin recovery on hosts without shell access (Render free tier).</td></tr>
+  <tr><td><span class="path">seed.ts</span></td><td>Empty DB → seeds settings, 4 categories, 3 authors, 8 tags, 9 articles (+ generated PNG covers/avatars via the upload service). <code>EXTRA_ARTICLES</code> list upserts 6 more by slug every boot — idempotent, skips existing.</td></tr>
+</table>
+
+<h2>8. Lifecycles — <span class="path">article/lifecycles.ts</span></h2>
+<table>
+  <tr><th>Hook</th><th>Effect</th></tr>
+  <tr><td><code>beforeCreate / beforeUpdate</code></td><td>Extracts text from Blocks content → <code>readingTime</code> (words ÷ 200 wpm, min 1); defaults <code>publishedDate</code> to now.</td></tr>
+  <tr><td><code>afterCreate / afterUpdate / afterDelete</code></td><td><code>notifyFrontend()</code> → fire-and-forget POST to <code>FRONTEND_URL/api/revalidate?secret=…</code> → Next.js clears ISR cache → publish goes live instantly. Publish/unpublish rides on afterUpdate.</td></tr>
+</table>
+
+<h2>9. Middleware — <span class="path">src/middlewares/api-rate-limit.ts</span></h2>
+<p>In-memory per-IP limiter on <code>/api/*</code>: <code>RATE_LIMIT_MAX</code> requests per <code>RATE_LIMIT_WINDOW_MS</code> (default 120/60s) → 429 + warn log when exceeded. Periodic sweep prevents unbounded map growth. Best-effort single-instance — production traffic limiting should also live at CDN/edge.</p>
+
+<h2>10. Environment variables</h2>
+<table>
+  <tr><th>Var</th><th>Purpose</th></tr>
+  <tr><td><code>DATABASE_CLIENT / DATABASE_URL / DATABASE_SSL / DATABASE_FILENAME</code></td><td>DB selection — sqlite file locally, Neon URL + ssl in prod</td></tr>
+  <tr><td><code>APP_KEYS, API_TOKEN_SALT, ADMIN_JWT_SECRET, TRANSFER_TOKEN_SALT, JWT_SECRET, ENCRYPTION_KEY</code></td><td>Strapi crypto secrets (fresh values generated for prod)</td></tr>
+  <tr><td><code>CLOUDINARY_NAME / KEY / SECRET</code></td><td>Presence switches upload provider local → Cloudinary</td></tr>
+  <tr><td><code>CORS_ORIGIN</code></td><td>Allowed browser origin(s)</td></tr>
+  <tr><td><code>FRONTEND_URL, REVALIDATE_SECRET</code></td><td>Lifecycle → Next.js revalidate POST</td></tr>
+  <tr><td><code>ADMIN_EMAIL, ADMIN_PASSWORD</code></td><td>Optional super-admin provisioning/reset</td></tr>
+  <tr><td><code>RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX</code></td><td>Public API throttle</td></tr>
+</table>
+
+<h2>11. Security model recap</h2>
+<ul>
+  <li><b>Public role:</b> read published content only + 3 validated mutations; no draft/unpublished/Pii reads (contact messages, subscribers are not publicly listable).</li>
+  <li><b>Scoped API token:</b> least-privilege permissions, server-side env only.</li>
+  <li><b>Validation:</b> every custom endpoint validates + bounds input lengths.</li>
+  <li><b>Upload guard:</b> MIME allow/deny lists; no SVG/executables.</li>
+  <li><b>Rate limiting + CORS lockdown</b> on the public surface.</li>
+  <li><b>Secrets:</b> all in env/gitignored files; production uses fresh values.</li>
+</ul>
+
+<div class="foot">Meridian backend — Strapi 5.60 · docs/backend-explained.pdf · generated Nov 2026. Source of truth: backend/src/ in the repo.</div>
+</body>
+</html>
