@@ -20,6 +20,12 @@ export const PUBLIC_ACTIONS = [
   'api::website-setting.website-setting.find',
   'api::newsletter-subscriber.newsletter-subscriber.subscribe',
   'api::contact-message.contact-message.submit',
+  'api::job-post.job-post.find',
+  'api::job-post.job-post.findOne',
+  'api::announcement.announcement.find',
+  'api::announcement.announcement.findOne',
+  'api::award.award.find',
+  'api::award.award.findOne',
 ];
 
 /**

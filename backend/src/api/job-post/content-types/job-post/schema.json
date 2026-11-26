@@ -1,0 +1,93 @@
+{
+  "kind": "collectionType",
+  "collectionName": "job_posts",
+  "info": {
+    "singularName": "job-post",
+    "pluralName": "job-posts",
+    "displayName": "Job Post",
+    "description": "Open positions published on the careers page"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "department": {
+      "type": "enumeration",
+      "enum": ["Engineering", "Design", "Operations", "Marketing", "People", "Editorial"],
+      "required": true
+    },
+    "location": {
+      "type": "string",
+      "required": true
+    },
+    "employmentType": {
+      "type": "enumeration",
+      "enum": ["Full-time", "Part-time", "Contract", "Internship"],
+      "default": "Full-time",
+      "required": true
+    },
+    "workMode": {
+      "type": "enumeration",
+      "enum": ["On-site", "Remote", "Hybrid"],
+      "default": "Hybrid"
+    },
+    "experienceLevel": {
+      "type": "enumeration",
+      "enum": ["Entry", "Mid", "Senior", "Lead"],
+      "default": "Mid"
+    },
+    "salaryRange": {
+      "type": "string"
+    },
+    "excerpt": {
+      "type": "text",
+      "required": true,
+      "maxLength": 300
+    },
+    "description": {
+      "type": "blocks",
+      "required": true
+    },
+    "requirements": {
+      "type": "blocks"
+    },
+    "applyUrl": {
+      "type": "string"
+    },
+    "applyEmail": {
+      "type": "email"
+    },
+    "postedDate": {
+      "type": "datetime"
+    },
+    "applicationDeadline": {
+      "type": "date"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "seoTitle": {
+      "type": "string",
+      "maxLength": 70
+    },
+    "seoDescription": {
+      "type": "text",
+      "maxLength": 160
+    }
+  }
+}

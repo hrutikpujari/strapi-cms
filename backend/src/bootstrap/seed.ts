@@ -160,6 +160,8 @@ export async function seedDemoData(strapi: Core.Strapi) {
     await seedWebsiteSettings(strapi);
   }
 
+  await seedCompanyContent(strapi);
+
   const articleCount = await strapi.db.query('api::article.article').count();
   if (articleCount > 0) {
     strapi.log.info('[seed] Articles already exist — skipping demo seed');
@@ -808,3 +810,228 @@ async function seedExtraArticles(strapi: Core.Strapi) {
   }
 }
 
+
+/* ------------------------------------------------------------------ */
+/* Company content: job posts, announcements, awards                   */
+/* Idempotent — keyed on slug, safe on every boot.                     */
+/* ------------------------------------------------------------------ */
+
+export async function seedCompanyContent(strapi: Core.Strapi) {
+  const jobDefs: any[] = [
+    {
+      title: 'Senior Frontend Engineer',
+      slug: 'senior-frontend-engineer',
+      department: 'Engineering',
+      location: 'Pune, India',
+      employmentType: 'Full-time',
+      workMode: 'Hybrid',
+      experienceLevel: 'Senior',
+      salaryRange: '₹22-32 LPA',
+      excerpt:
+        'Own the rendering layer of our editorial platform — Next.js, React, and the performance budget that keeps the site fast.',
+      description: [
+        p('Meridian is looking for a senior frontend engineer to take ownership of our reader-facing platform. You will work on the Next.js application that renders every page a reader touches, and on the component library that the editorial team builds stories with.'),
+        h(2, 'What you will do'),
+        ulist([
+          'Design and ship performant, accessible interfaces in Next.js and React',
+          'Own Core Web Vitals and our performance budgets across the site',
+          'Partner with design on a shared component system',
+          'Lead code review for the frontend guild',
+        ]),
+      ],
+      requirements: [
+        ulist([
+          '5+ years building production web applications',
+          'Deep TypeScript, React, and modern CSS experience',
+          'Working knowledge of SSR/ISR caching models',
+        ]),
+      ],
+      applyEmail: 'careers@meridian.press',
+      postedDate: new Date(Date.now() - 6 * 86400000),
+      applicationDeadline: new Date(Date.now() + 45 * 86400000).toISOString().slice(0, 10),
+      featured: true,
+      seoTitle: 'Senior Frontend Engineer — Careers at Meridian',
+      seoDescription:
+        'Join Meridian as a senior frontend engineer. Hybrid in Pune. Own the Next.js rendering layer behind our editorial platform.',
+    },
+    {
+      title: 'Staff Writer — Technology',
+      slug: 'staff-writer-technology',
+      department: 'Editorial',
+      location: 'Remote',
+      employmentType: 'Full-time',
+      workMode: 'Remote',
+      experienceLevel: 'Mid',
+      salaryRange: '₹14-20 LPA',
+      excerpt:
+        'Report and write deeply-reported essays on how software gets built — for readers who build it.',
+      description: [
+        p('We are hiring a staff writer to cover the technology industry with the depth our readers expect. This is a reporting role: original interviews, filed stories, and essays that explain not just what happened but why it matters.'),
+        h(2, 'What you will do'),
+        ulist([
+          'File 2-3 reported pieces per month plus shorter analysis',
+          'Develop sources across engineering teams and open-source communities',
+          'Work with editors through revision cycles',
+        ]),
+      ],
+      requirements: [
+        ulist([
+          '3+ years of journalism or technical writing experience',
+          'A portfolio of published, reported work',
+          'Comfort reading technical documentation and code',
+        ]),
+      ],
+      applyEmail: 'editors@meridian.press',
+      postedDate: new Date(Date.now() - 12 * 86400000),
+      applicationDeadline: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
+      seoTitle: 'Staff Writer, Technology — Careers at Meridian',
+      seoDescription:
+        'Meridian is hiring a remote staff writer to cover technology. Reported essays, original sourcing, editorial depth.',
+    },
+    {
+      title: 'Product Designer',
+      slug: 'product-designer',
+      department: 'Design',
+      location: 'Pune, India',
+      employmentType: 'Contract',
+      workMode: 'On-site',
+      experienceLevel: 'Mid',
+      salaryRange: '₹90k-1.2L / month',
+      excerpt:
+        'Six-month contract shaping the reading experience — typography, layouts, and the quiet details of a publication.',
+      description: [
+        p('Meridian needs a product designer for a six-month engagement focused on the reading experience: article layouts, typography scale, and the navigation patterns that help readers stay in a piece.'),
+      ],
+      requirements: [
+        ulist([
+          'Portfolio showing strong editorial or content-heavy product work',
+          'Typography fluency — you set type, not just place it',
+          'Figma proficiency; front-end literacy is a plus',
+        ]),
+      ],
+      applyEmail: 'design@meridian.press',
+      postedDate: new Date(Date.now() - 3 * 86400000),
+      applicationDeadline: new Date(Date.now() + 21 * 86400000).toISOString().slice(0, 10),
+      seoTitle: 'Product Designer (Contract) — Careers at Meridian',
+      seoDescription:
+        'Six-month product design contract at Meridian, on-site in Pune. Editorial layouts, typography, reading experience.',
+    },
+  ];
+
+  for (const def of jobDefs) {
+    const existing = await strapi.documents('api::job-post.job-post').findMany({
+      filters: { slug: def.slug },
+      limit: 1,
+    });
+    if (existing.length) continue;
+    await strapi.documents('api::job-post.job-post').create({
+      data: { ...def, description: def.description as any, requirements: def.requirements as any, isActive: true },
+      status: 'published',
+    });
+    strapi.log.info(`[seed] Added job post: ${def.slug}`);
+  }
+
+  /* ---------------- Announcements ---------------- */
+  const announcementDefs: any[] = [
+    {
+      title: 'Meridian launches its redesigned reading experience',
+      slug: 'redesigned-reading-experience',
+      summary:
+        'New typography, faster pages, and a calmer layout — the redesigned site is live for all readers today.',
+      body: [
+        p('After three months of work, the new Meridian reading experience is live. Pages render faster, long-form pieces get the typography they deserve, and the site is quieter in all the ways that matter.'),
+        p('If anything looks broken, tell us — there is a feedback link in the footer.'),
+      ],
+      category: 'Product',
+      pinned: true,
+      publishDate: new Date(Date.now() - 2 * 86400000),
+      seoTitle: 'Meridian launches redesigned reading experience',
+      seoDescription:
+        'Meridian’s redesigned site is live — new typography, faster pages, and a calmer layout for readers.',
+    },
+    {
+      title: 'We are hiring: three roles open across engineering and editorial',
+      slug: 'now-hiring-three-roles',
+      summary:
+        'Senior frontend engineer, staff writer, and a product design contract — applications open now.',
+      body: [
+        p('Meridian is growing. We have opened three roles — a senior frontend engineer, a staff writer covering technology, and a six-month product design contract. Full details are on the careers page.'),
+      ],
+      category: 'Careers',
+      publishDate: new Date(Date.now() - 5 * 86400000),
+      linkUrl: '/careers',
+      seoTitle: 'Meridian is hiring — three open roles',
+      seoDescription:
+        'Meridian has three open roles across engineering, editorial, and design. Applications are open.',
+    },
+    {
+      title: 'Meridian wins Web Excellence Award for editorial design',
+      slug: 'web-excellence-award-2026',
+      summary:
+        'The 2026 Web Excellence Awards named Meridian a winner in the Publishing category.',
+      body: [
+        p('We are honored to share that Meridian has been named a 2026 Web Excellence Award winner in the Publishing category — recognized for editorial design and reader experience.'),
+      ],
+      category: 'Press',
+      publishDate: new Date(Date.now() - 14 * 86400000),
+      linkUrl: '/awards',
+      seoTitle: 'Meridian wins 2026 Web Excellence Award',
+      seoDescription:
+        'Meridian was named a 2026 Web Excellence Award winner for editorial design and reader experience.',
+    },
+  ];
+
+  for (const def of announcementDefs) {
+    const existing = await strapi.documents('api::announcement.announcement').findMany({
+      filters: { slug: def.slug },
+      limit: 1,
+    });
+    if (existing.length) continue;
+    await strapi.documents('api::announcement.announcement').create({
+      data: { ...def, body: def.body as any },
+      status: 'published',
+    });
+    strapi.log.info(`[seed] Added announcement: ${def.slug}`);
+  }
+
+  /* ---------------- Awards ---------------- */
+  const awardDefs: any[] = [
+    {
+      title: 'Web Excellence Award — Publishing',
+      slug: 'web-excellence-award-publishing-2026',
+      issuer: 'Web Excellence Awards',
+      year: 2026,
+      description:
+        'Recognized for editorial design, typography, and overall reader experience in the publishing category.',
+      featured: true,
+    },
+    {
+      title: 'Best Independent Editorial Site',
+      slug: 'best-independent-editorial-site-2025',
+      issuer: 'Content Media Awards',
+      year: 2025,
+      description:
+        'Awarded for editorial independence, design craft, and consistent publishing quality.',
+    },
+    {
+      title: 'Site of the Day',
+      slug: 'site-of-the-day-2025',
+      issuer: 'CSS Design Awards',
+      year: 2025,
+      description: 'Featured for interface craft and typographic detail.',
+    },
+  ];
+
+  for (const def of awardDefs) {
+    const existing = await strapi.documents('api::award.award').findMany({
+      filters: { slug: def.slug },
+      limit: 1,
+    });
+    if (existing.length) continue;
+    const badge = await uploadImage(strapi, `award-${def.slug}`, def.title, 400, 400);
+    await strapi.documents('api::award.award').create({
+      data: { ...def, badgeImage: badge.id },
+    });
+    strapi.log.info(`[seed] Added award: ${def.slug}`);
+  }
+}

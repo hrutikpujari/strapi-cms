@@ -77,6 +77,9 @@ export function Footer({ settings, categories }: FooterProps) {
               <li><Link href="/blog" className="text-sm text-muted hover:text-foreground">All Articles</Link></li>
               <li><Link href="/about" className="text-sm text-muted hover:text-foreground">About</Link></li>
               <li><Link href="/contact" className="text-sm text-muted hover:text-foreground">Contact</Link></li>
+              <li><Link href="/careers" className="text-sm text-muted hover:text-foreground">Careers</Link></li>
+              <li><Link href="/announcements" className="text-sm text-muted hover:text-foreground">Announcements</Link></li>
+              <li><Link href="/awards" className="text-sm text-muted hover:text-foreground">Awards</Link></li>
               <li><Link href="/feed.xml" className="text-sm text-muted hover:text-foreground">RSS Feed</Link></li>
             </ul>
           </nav>

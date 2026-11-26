@@ -1,14 +1,16 @@
 import type { MetadataRoute } from 'next';
-import { getAllArticleSlugs, getAuthorSlugs, getCategories } from '@/services/api';
+import { getAllArticleSlugs, getAuthorSlugs, getCategories, getJobPostSlugs, getAnnouncementSlugs } from '@/services/api';
 import { config } from '@/lib/config';
 
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [articles, categories, authors] = await Promise.all([
+  const [articles, categories, authors, jobs, announcements] = await Promise.all([
     getAllArticleSlugs().catch(() => ({ data: [] })),
     getCategories().catch(() => ({ data: [] })),
     getAuthorSlugs().catch(() => ({ data: [] })),
+    getJobPostSlugs().catch(() => ({ data: [] })),
+    getAnnouncementSlugs().catch(() => ({ data: [] })),
   ]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -19,6 +21,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/privacy',
     '/terms',
     '/search',
+    '/careers',
+    '/announcements',
+    '/awards',
   ].map((path) => ({
     url: `${config.siteUrl}${path}`,
     lastModified: new Date(),
@@ -47,5 +52,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
-  return [...staticRoutes, ...articleRoutes, ...categoryRoutes, ...authorRoutes];
+  const jobRoutes: MetadataRoute.Sitemap = jobs.data.map((j) => ({
+    url: `${config.siteUrl}/careers/${j.slug}`,
+    lastModified: new Date(j.updatedAt ?? Date.now()),
+    changeFrequency: 'weekly',
+    priority: 0.6,
+  }));
+
+  const announcementRoutes: MetadataRoute.Sitemap = announcements.data.map((a) => ({
+    url: `${config.siteUrl}/announcements/${a.slug}`,
+    lastModified: new Date(a.updatedAt ?? Date.now()),
+    changeFrequency: 'weekly',
+    priority: 0.5,
+  }));
+
+  return [
+    ...staticRoutes,
+    ...articleRoutes,
+    ...categoryRoutes,
+    ...authorRoutes,
+    ...jobRoutes,
+    ...announcementRoutes,
+  ];
 }

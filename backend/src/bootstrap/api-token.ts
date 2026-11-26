@@ -19,9 +19,18 @@ export async function ensureFrontendToken(strapi: Core.Strapi) {
 
   const existing = await service.getByName(TOKEN_NAME);
   if (existing) {
+    // Keep the token's custom scope in sync with PUBLIC_ACTIONS — new content
+    // types must be readable by the frontend token or requests return 403.
+    const current = new Set(existing.permissions ?? []);
+    if (PUBLIC_ACTIONS.some((a) => !current.has(a))) {
+      await service.update(existing.id, { permissions: PUBLIC_ACTIONS });
+      strapi.log.info(
+        `[bootstrap] API token "${TOKEN_NAME}" scope updated to ${PUBLIC_ACTIONS.length} actions`
+      );
+    }
     try {
       await fs.access(TOKEN_FILE);
-      return; // token + stored key both exist, nothing to do
+      return; // token + stored key both exist, nothing else to do
     } catch {
       strapi.log.warn(
         `[bootstrap] API token "${TOKEN_NAME}" exists but its key was not stored. ` +

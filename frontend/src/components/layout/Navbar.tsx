@@ -33,6 +33,7 @@ export function Navbar({ settings, categories }: NavbarProps) {
     { href: '/', label: 'Home' },
     { href: '/blog', label: 'Articles' },
     ...categories.slice(0, 3).map((c) => ({ href: `/category/${c.slug}`, label: c.name })),
+    { href: '/careers', label: 'Careers' },
     { href: '/about', label: 'About' },
   ];
 

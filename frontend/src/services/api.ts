@@ -1,10 +1,13 @@
 import { strapiFetch } from '@/lib/strapi';
 import type {
+  Announcement,
   Article,
+  Award,
   Author,
   Category,
   StrapiListResponse,
   StrapiSingleResponse,
+  JobPost,
   Tag,
   WebsiteSettings,
 } from '@/types/strapi';
@@ -226,5 +229,67 @@ export function getSettings() {
     'populate[favicon]': 'true',
     'populate[defaultOgImage]': 'true',
     'populate[socialLinks]': 'true',
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Company: job posts, announcements, awards                            */
+/* ------------------------------------------------------------------ */
+
+export function getJobPosts(includeInactive = false) {
+  const params: Record<string, string | number> = {
+    'sort[0]': 'featured:desc',
+    'sort[1]': 'postedDate:desc',
+    'pagination[pageSize]': 50,
+  };
+  if (!includeInactive) params['filters[isActive][$eq]'] = 'true';
+  return strapiFetch<StrapiListResponse<JobPost>>('job-posts', params);
+}
+
+export async function getJobPostBySlug(slug: string): Promise<JobPost | null> {
+  const res = await strapiFetch<StrapiListResponse<JobPost>>('job-posts', {
+    'filters[slug][$eq]': slug,
+    'pagination[pageSize]': 1,
+  });
+  return res.data[0] ?? null;
+}
+
+export function getJobPostSlugs() {
+  return strapiFetch<StrapiListResponse<JobPost>>('job-posts', {
+    'fields[0]': 'slug',
+    'fields[1]': 'updatedAt',
+    'pagination[pageSize]': 200,
+  });
+}
+
+export function getAnnouncements() {
+  return strapiFetch<StrapiListResponse<Announcement>>('announcements', {
+    'sort[0]': 'pinned:desc',
+    'sort[1]': 'publishDate:desc',
+    'pagination[pageSize]': 50,
+  });
+}
+
+export async function getAnnouncementBySlug(slug: string): Promise<Announcement | null> {
+  const res = await strapiFetch<StrapiListResponse<Announcement>>('announcements', {
+    'filters[slug][$eq]': slug,
+    'pagination[pageSize]': 1,
+  });
+  return res.data[0] ?? null;
+}
+
+export function getAnnouncementSlugs() {
+  return strapiFetch<StrapiListResponse<Announcement>>('announcements', {
+    'fields[0]': 'slug',
+    'fields[1]': 'updatedAt',
+    'pagination[pageSize]': 200,
+  });
+}
+
+export function getAwards() {
+  return strapiFetch<StrapiListResponse<Award>>('awards', {
+    'populate[badgeImage]': 'true',
+    'sort[0]': 'year:desc',
+    'pagination[pageSize]': 50,
   });
 }

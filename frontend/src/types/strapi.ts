@@ -143,3 +143,65 @@ export interface StrapiSingleResponse<T> {
   data: T | null;
   meta: Record<string, unknown>;
 }
+
+export interface JobPost {
+  id: number;
+  documentId: string;
+  title: string;
+  slug: string;
+  department: 'Engineering' | 'Design' | 'Operations' | 'Marketing' | 'People' | 'Editorial';
+  location: string;
+  employmentType: 'Full-time' | 'Part-time' | 'Contract' | 'Internship';
+  workMode?: 'On-site' | 'Remote' | 'Hybrid' | null;
+  experienceLevel?: 'Entry' | 'Mid' | 'Senior' | 'Lead' | null;
+  salaryRange?: string | null;
+  excerpt: string;
+  description: BlockNode[];
+  requirements?: BlockNode[] | null;
+  applyUrl?: string | null;
+  applyEmail?: string | null;
+  postedDate?: string | null;
+  applicationDeadline?: string | null;
+  isActive: boolean;
+  featured: boolean;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+}
+
+export interface Announcement {
+  id: number;
+  documentId: string;
+  title: string;
+  slug: string;
+  summary: string;
+  body: BlockNode[];
+  category?: 'Company' | 'Product' | 'Press' | 'Event' | 'Careers' | null;
+  pinned: boolean;
+  publishDate?: string | null;
+  expiresAt?: string | null;
+  linkUrl?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+}
+
+export interface Award {
+  id: number;
+  documentId: string;
+  title: string;
+  slug: string;
+  issuer: string;
+  year: number;
+  description?: string | null;
+  badgeImage?: StrapiImage | null;
+  linkUrl?: string | null;
+  featured: boolean;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string;
+}
