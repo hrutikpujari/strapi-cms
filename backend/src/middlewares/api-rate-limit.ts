@@ -14,10 +14,35 @@ export default (
   const windowMs = config.windowMs ?? 60_000;
   const max = config.max ?? 120;
   const hits = new Map<string, { count: number; reset: number }>();
+  const trustedTokens = new Set<string>();
   let lastSweep = Date.now();
+
+  // Requests carrying a real API token (e.g. the scoped frontend token) are
+  // trusted server-to-server traffic — SSR builds legitimately burst well
+  // past the public limit. Cache validated token hashes so this stays cheap.
+  async function isTrustedRequest(ctx: any): Promise<boolean> {
+    const auth = ctx.request?.header?.authorization;
+    if (typeof auth !== 'string' || !auth.startsWith('Bearer ')) return false;
+    const key = auth.slice(7);
+    if (trustedTokens.has(key)) return true;
+    try {
+      const service = strapi.service('admin::api-token-content-api') as any;
+      const token = await service.getByAccessKey(service.hash(key));
+      if (token) {
+        trustedTokens.add(key);
+        return true;
+      }
+    } catch {
+      // fall through to normal limiting
+    }
+    return false;
+  }
 
   return async (ctx: any, next: () => Promise<void>) => {
     if (!ctx.path.startsWith('/api/')) {
+      return next();
+    }
+    if (await isTrustedRequest(ctx)) {
       return next();
     }
 

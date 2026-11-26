@@ -28,10 +28,19 @@ export async function strapiFetch<T>(
     headers.Authorization = `Bearer ${config.apiToken}`;
   }
 
-  const res = await fetch(url.toString(), {
-    headers,
-    next: { revalidate: init.revalidate ?? config.revalidate, tags: init.tags },
-  });
+  const doFetch = () =>
+    fetch(url.toString(), {
+      headers,
+      next: { revalidate: init.revalidate ?? config.revalidate, tags: init.tags },
+    });
+
+  let res = await doFetch();
+  // Retry transient 429/5xx — SSG builds can burst past Strapi's rate limit.
+  for (let attempt = 1; !res.ok && attempt <= 2; attempt++) {
+    if (res.status !== 429 && res.status < 500) break;
+    await new Promise((r) => setTimeout(r, 1000 * attempt + Math.random() * 500));
+    res = await doFetch();
+  }
 
   if (!res.ok) {
     const body = await res.text().catch(() => '');
